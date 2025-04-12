@@ -164,6 +164,7 @@ String load (String filename) {
     return (S);
   } else {
     Serial.printf(" == '' due to file error...\n");
+    return ("");
   }
 }
 
@@ -356,11 +357,11 @@ void setup ()
   Display("(C) 2019,2024");
   delay(2500);
 
-  //Display("OTA starter");
-  //ota_starter();
-
   Display("WM_autoConnect()");
   WM_autoConnect();
+
+  Display("OTA starter");
+  ota_starter();
 
   Display("httpd starter");
   httpd_starter();
