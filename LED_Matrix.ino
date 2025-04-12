@@ -44,6 +44,7 @@ using namespace std;
 
 #define PAUSE_TIME 0
 #define SCROLL_SPEED 50
+#define FORMAT_SPIFFS_IF_FAILED true
 
 #define CLK_PIN   G22 // or SCK or CLK orange
 #define DATA_PIN  G23 // or MOSI or DIN green
@@ -332,9 +333,19 @@ void setup ()
   uint8_t max = 0;
 
   Serial.begin(115200);                           // full speed to monitor
-  SPIFFS.begin();
   M5.begin();
-
+  if(!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)){
+        Serial.println("SPIFFS Mount Failed");
+        // Erase SPIFFS
+        Serial.println("Erasing SPIFFS...");
+        if (SPIFFS.format()) {
+          Serial.println("SPIFFS erased successfully.");
+        } else {
+          Serial.println("Error erasing SPIFFS.");
+        } 
+        return;
+  }
+    
   P.begin(MAX_ZONES);
   // Set up zones for 2 halves of the display
   P.setZone(ZONE_LOWER, 0, ZONE_SIZE - 1);
@@ -417,7 +428,7 @@ void theMatrix() {
 
     sprintf(curMessage, "%s", handleMacros(newMessage).c_str() );
     createHString(upperMessage, curMessage);
-    Serial.printf("curMessage = %s\n", curMessage);
+//    Serial.printf("curMessage = %s\n", curMessage);
 
     P.displayReset(ZONE_LOWER);
     P.displayReset(ZONE_UPPER);
