@@ -196,9 +196,66 @@ void change_speed() {
   server.send(200, "text/html", form());
 }
 
+// for testing purpose:
+//extern "C" int clock_gettime(clockid_t unused, struct timespec * tp);
+
+//timeval tv;
+//timespec tp;
+//uint32_t now_ms, now_us;
+//time_t now;
+
+//timeval cbtime;      // time set in callback
+//bool cbtime_set = false;
+
+//void time_is_set(void) {
+//  gettimeofday(&cbtime, NULL);
+//  cbtime_set = true;
+//}
+
 std::string handleMacros (std::string message)
 {
 
+/*
+  if (std::string::npos != message.find("$$TIME")) {
+    gettimeofday(&tv, nullptr);
+    clock_gettime(0, &tp);
+    now = time(nullptr);
+
+    struct tm * timeinfo;
+    char buffer [80];
+
+    time (&now);
+    timeinfo = localtime (&now);
+
+    strftime (buffer, 80, "%r", timeinfo);
+    replaceAll(message, "$$TIME", buffer);
+  }
+
+  if (std::string::npos != message.find("$$DATE")) {
+    gettimeofday(&tv, nullptr);
+    clock_gettime(0, &tp);
+    now = time(nullptr);
+
+    struct tm * timeinfo;
+    char buffer [80];
+
+    time (&now);
+    timeinfo = localtime (&now);
+
+    strftime (buffer, 80, "%A %B %e %G", timeinfo);
+    replaceAll(message, "$$DATE", buffer);
+  }
+  */
+
+/*
+  if (std::string::npos != message.find("$$VCC")) {
+    char buffer [80];
+    float vcc = ESP.getVcc() / 1024.0 * 0.91591111111; // was off by about 500mv
+    sprintf(buffer, "%0.3f", vcc);
+    replaceAll(message, "$$VCC", buffer);
+  }
+  */
+  
   if (std::string::npos != message.find("$$SSID")) {
     char buffer [80];
     if ( 0 != WiFi.localIP()[0] ) {
@@ -388,6 +445,12 @@ void setup ()
 
   IPAddress apIP(WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
 
+  /* Setup the DNS server redirecting all the domains to the apIP */
+//  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+//  dnsServer.start(53, "*", apIP);
+
+//  settimeofday_cb(time_is_set);
+  
   sprintf(newMessage, "%s", load("/msg.txt").c_str() );
   displayOffset = 0;
   newMessageAvailable = true;
