@@ -14,6 +14,8 @@
 #include "Font_Data.h"
 #include <FS.h> //this needs to be first, or it all crashes and burns...
 #include "SPIFFS.h"
+#include <time.h>
+#include "apps/sntp/sntp.h"
 #include <M5StickC.h>
 
 using namespace std;
@@ -196,57 +198,29 @@ void change_speed() {
   server.send(200, "text/html", form());
 }
 
-// for testing purpose:
-//extern "C" int clock_gettime(clockid_t unused, struct timespec * tp);
-
-//timeval tv;
-//timespec tp;
-//uint32_t now_ms, now_us;
-//time_t now;
-
-//timeval cbtime;      // time set in callback
-//bool cbtime_set = false;
-
-//void time_is_set(void) {
-//  gettimeofday(&cbtime, NULL);
-//  cbtime_set = true;
-//}
+time_t now;
+char strftime_buf[64];
+struct tm timeinfo;
 
 std::string handleMacros (std::string message)
 {
 
-/*
   if (std::string::npos != message.find("$$TIME")) {
-    gettimeofday(&tv, nullptr);
-    clock_gettime(0, &tp);
-    now = time(nullptr);
-
-    struct tm * timeinfo;
     char buffer [80];
-
-    time (&now);
-    timeinfo = localtime (&now);
-
-    strftime (buffer, 80, "%r", timeinfo);
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    strftime (buffer, 80, "%r", &timeinfo);
     replaceAll(message, "$$TIME", buffer);
   }
 
   if (std::string::npos != message.find("$$DATE")) {
-    gettimeofday(&tv, nullptr);
-    clock_gettime(0, &tp);
-    now = time(nullptr);
-
-    struct tm * timeinfo;
     char buffer [80];
-
-    time (&now);
-    timeinfo = localtime (&now);
-
-    strftime (buffer, 80, "%A %B %e %G", timeinfo);
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    strftime (buffer, 80, "%A %B %e %G", &timeinfo);
     replaceAll(message, "$$DATE", buffer);
   }
-  */
-
+  
 /*
   if (std::string::npos != message.find("$$VCC")) {
     char buffer [80];
@@ -402,6 +376,8 @@ void setup ()
         } 
         return;
   }
+  setenv("TZ", "America/Phoenix                     ", 1);
+  tzset();
     
   P.begin(MAX_ZONES);
   // Set up zones for 2 halves of the display
