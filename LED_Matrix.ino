@@ -34,7 +34,7 @@ using namespace std;
 #endif
 
 // Define the number of devices we have in the chain and the hardware interface
-// NOTE: These pin numbers are for ESO8266 hardware SPI and will probably not
+// NOTE: These pin numbers are for ESP8266 hardware SPI and will probably not
 // work with your hardware and may need to be adapted
 #define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 #define MAX_ZONES 2
@@ -82,7 +82,7 @@ WebServer server(80);
 int displayOffset = 0;
 
 void notify(struct timeval* t) {
-  Serial.println("synchronized");
+  Serial.println("SNTP synchronized");
 }
 
 void initSNTP() {
@@ -175,7 +175,7 @@ String load (String filename) {
   if (file) {
     String S;
     S = file.readString().c_str();
-    Serial.printf(" == %s\n", S.c_str());
+    Serial.printf(" == \"%s\"\n", S.c_str());
     return (S);
   } else {
     Serial.printf(" == '' due to file error...\n");
@@ -324,24 +324,17 @@ void ota_starter() {
 }
 
 void WM_autoConnect() {
-    Serial.println("enable WM");
-    Display("WM_autoConnect");
-//    WiFiManager;
     //Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wifiManager;
 
     //exit after config instead of connecting
     wifiManager.setBreakAfterConfig(true);
-
-    //reset settings - for testing
-    //wifiManager.resetSettings();
-
     //tries to connect to last known settings
     //if it does not connect it starts an access point with the specified name
     //here  "AutoConnectAP" with password "password"
     //and goes into a blocking loop awaiting configuration
-    //  wifiManager.setTimeout(180);
-    Display("wifiManager");
+    
+    wifiManager.setTimeout(180);
     if (!wifiManager.autoConnect("LEDMatrix1", "knockknock")) {
       Serial.println("failed to connect, we should reset as see if it connects");
       Display("restart in 3");
@@ -356,26 +349,10 @@ void WM_autoConnect() {
     }
 }
 
-//boolean D2_handler() {
-//  if ( digitalRead(D2) == LOW ) {
-//    ESP.wdtDisable();                               // used to debug, disable wachdog timer,
-//    Serial.println("D2 is LOW, startConfigPortal(...)");
-//    Display("LEDMatrix1 192.168.4.1");
-//    WiFiManager wifiManager;
-//    wifiManager.setTimeout(180);
-//    wifiManager.startConfigPortal("LEDMatrix1", "knockknock");
-//    ESP.wdtEnable(10000);
-//    yield();
-//    return true;
-//  }
-//  return false;
-//}
-
 void wait4SNTP() {
+  Display("SNTP:pool.ntp.org");
   while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
     delay(250);
-    Serial.println("waiting ...");
-    Display("Waiting on pool.ntp.org");
   }
 }
 
@@ -415,10 +392,10 @@ void setup ()
 
   P.displayReset(ZONE_LOWER);
   P.displayReset(ZONE_UPPER);
-  Display("(C) 2019,2024");
+  Display("(C) 2019-2025");
   delay(2500);
 
-  Display("WM_autoConnect()");
+  Display("WM_autoConnect");
   WM_autoConnect();
 
   Display("OTA starter");
@@ -432,10 +409,6 @@ void setup ()
   initSNTP();
   wait4SNTP();  
     
-  char result[16];
-  sprintf(result, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
-  Serial.println();
-  Serial.println(result);
   Serial.print("WebServer ready!   ");
   Serial.println(WiFi.localIP());  // Serial monitor prints localIP
 
@@ -443,18 +416,12 @@ void setup ()
 
   IPAddress apIP(WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
 
-  /* Setup the DNS server redirecting all the domains to the apIP */
-//  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-//  dnsServer.start(53, "*", apIP);
-
-//  settimeofday_cb(time_is_set);
-  
+// FIXME? incompatible types in assignment of 'const char [12]' to 'char [512]' unless I use sprintf...
   sprintf(newMessage, "%s", load("/msg.txt").c_str() );
   displayOffset = 0;
   newMessageAvailable = true;
   sprintf(curMessage, "%s", handleMacros (newMessage).c_str() );
-
-  if (strlen(curMessage) == 0) {
+  if (strlen(curMessage) <= 1) {
     sprintf(curMessage, "%s", handleMacros ("Login to http://$$IP ($$SSID)").c_str() );
   }
 }
@@ -505,8 +472,8 @@ void theMatrix() {
 
 void loop ()
 {
-  M5.update();
-  server.handleClient();
+  M5.update(); // button states etc
+  server.handleClient(); // WebUI
   ArduinoOTA.handle(); // Check OTA Firmware Updates
   theMatrix();
 }  // end of loop
