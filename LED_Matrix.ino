@@ -306,7 +306,7 @@ void httpd_starter() {
 void ota_starter() {
   //OTA SETUP
   ArduinoOTA.setPort(OTAport);
-  ArduinoOTA.setHostname("LEDMatrix2");                // Hostname defaults to esp8266-[ChipID]
+  ArduinoOTA.setHostname("LEDMatrix3");                // Hostname defaults to esp8266-[ChipID]
   ArduinoOTA.setPassword((const char *)OTApassword); // No authentication by default
 
   ArduinoOTA.onStart([]() {
@@ -356,7 +356,7 @@ void WM_autoConnect() {
     //and goes into a blocking loop awaiting configuration
     //  wifiManager.setTimeout(180);
     Display("wifiManager");
-    if (!wifiManager.autoConnect("LEDMatrix2", "knockknock")) {
+    if (!wifiManager.autoConnect("LEDMatrix3", "knockknock")) {
       Serial.println("failed to connect, we should reset as see if it connects");
       Display("restart in 3");
       delay(1000);
@@ -374,10 +374,10 @@ void WM_autoConnect() {
 //  if ( digitalRead(D2) == LOW ) {
 //    ESP.wdtDisable();                               // used to debug, disable wachdog timer,
 //    Serial.println("D2 is LOW, startConfigPortal(...)");
-//    Display("LEDMatrix2 192.168.4.1");
+//    Display("LEDMatrix3 192.168.4.1");
 //    WiFiManager wifiManager;
 //    wifiManager.setTimeout(180);
-//    wifiManager.startConfigPortal("LEDMatrix2", "knockknock");
+//    wifiManager.startConfigPortal("LEDMatrix3", "knockknock");
 //    ESP.wdtEnable(10000);
 //    yield();
 //    return true;
@@ -441,7 +441,7 @@ void setup ()
   Serial.print("WebServer ready!   ");
   Serial.println(WiFi.localIP());  // Serial monitor prints localIP
 
-  WiFi.hostname("LEDMatrix2");
+  WiFi.hostname("LEDMatrix3");
 
   IPAddress apIP(WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
 
