@@ -427,7 +427,7 @@ void setup ()
   Display("httpd starter");
   httpd_starter();
 
-  setenv("TZ", "America/Phoenix                     ", 1);
+  setenv("TZ", "MST7                     ", 1);
   tzset();
   initSNTP();
   wait4SNTP();  
