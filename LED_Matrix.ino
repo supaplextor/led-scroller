@@ -15,7 +15,7 @@
 #include <FS.h> //this needs to be first, or it all crashes and burns...
 #include "SPIFFS.h"
 #include <time.h>
-#include "apps/sntp/sntp.h"
+#include "esp_sntp.h"
 #include <M5StickC.h>
 
 using namespace std;
@@ -70,7 +70,7 @@ char newMessage[BUF_SIZE];
 char upperMessage[BUF_SIZE];
 bool newMessageAvailable = false;
 
-#define softap_SSID "LEDMatrix19"                      // insert your SSID
+#define softap_SSID "LEDMatrix1"                      // insert your SSID
 #define softap_PASS "knockknock"                // insert your password
 
 #define OTApassword "knockknock" //the password you will need to enter to upload remotely via the ArduinoIDE
@@ -80,6 +80,18 @@ std::string handleMacros (std::string message);
 void Display (char* text);
 WebServer server(80);
 int displayOffset = 0;
+
+void notify(struct timeval* t) {
+  Serial.println("synchronized");
+}
+
+void initSNTP() {
+  sntp_set_sync_interval(60 * 60 * 1000UL); // 1 hour
+  sntp_set_time_sync_notification_cb(notify);
+  esp_sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
+  esp_sntp_setservername(0, "pool.ntp.org");
+  esp_sntp_init();
+}
 
 void replaceAll(std::string& str, const std::string& from, const std::string& to) {
   if (from.empty())
@@ -280,7 +292,7 @@ void httpd_starter() {
 void ota_starter() {
   //OTA SETUP
   ArduinoOTA.setPort(OTAport);
-  ArduinoOTA.setHostname("LEDMatrix3");                // Hostname defaults to esp8266-[ChipID]
+  ArduinoOTA.setHostname("LEDMatrix1");                // Hostname defaults to esp8266-[ChipID]
   ArduinoOTA.setPassword((const char *)OTApassword); // No authentication by default
 
   ArduinoOTA.onStart([]() {
@@ -330,7 +342,7 @@ void WM_autoConnect() {
     //and goes into a blocking loop awaiting configuration
     //  wifiManager.setTimeout(180);
     Display("wifiManager");
-    if (!wifiManager.autoConnect("LEDMatrix3", "knockknock")) {
+    if (!wifiManager.autoConnect("LEDMatrix1", "knockknock")) {
       Serial.println("failed to connect, we should reset as see if it connects");
       Display("restart in 3");
       delay(1000);
@@ -348,16 +360,24 @@ void WM_autoConnect() {
 //  if ( digitalRead(D2) == LOW ) {
 //    ESP.wdtDisable();                               // used to debug, disable wachdog timer,
 //    Serial.println("D2 is LOW, startConfigPortal(...)");
-//    Display("LEDMatrix3 192.168.4.1");
+//    Display("LEDMatrix1 192.168.4.1");
 //    WiFiManager wifiManager;
 //    wifiManager.setTimeout(180);
-//    wifiManager.startConfigPortal("LEDMatrix3", "knockknock");
+//    wifiManager.startConfigPortal("LEDMatrix1", "knockknock");
 //    ESP.wdtEnable(10000);
 //    yield();
 //    return true;
 //  }
 //  return false;
 //}
+
+void wait4SNTP() {
+  while (sntp_get_sync_status() != SNTP_SYNC_STATUS_COMPLETED) {
+    delay(250);
+    Serial.println("waiting ...");
+    Display("Waiting on pool.ntp.org");
+  }
+}
 
 void setup ()
 {
@@ -376,9 +396,6 @@ void setup ()
         } 
         return;
   }
-  setenv("TZ", "America/Phoenix                     ", 1);
-  tzset();
-    
   P.begin(MAX_ZONES);
   // Set up zones for 2 halves of the display
   P.setZone(ZONE_LOWER, 0, ZONE_SIZE - 1);
@@ -410,6 +427,11 @@ void setup ()
   Display("httpd starter");
   httpd_starter();
 
+  setenv("TZ", "America/Phoenix                     ", 1);
+  tzset();
+  initSNTP();
+  wait4SNTP();  
+    
   char result[16];
   sprintf(result, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
   Serial.println();
@@ -417,7 +439,7 @@ void setup ()
   Serial.print("WebServer ready!   ");
   Serial.println(WiFi.localIP());  // Serial monitor prints localIP
 
-  WiFi.hostname("LEDMatrix3");
+  WiFi.hostname("LEDMatrix1");
 
   IPAddress apIP(WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
 
