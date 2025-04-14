@@ -4,4 +4,4 @@ Features save and auto reload. Uses WiFi manager to connect to your access point
 
 SNTP (Simple NTP) time sync (fixed to Arizona, but you can patch that)
 
-M5 Atome lite datasheet: https://www.mouser.com/datasheet/2/1117/M5Stack_08102021_C008-2509339.pdf
+M5 Atom lite datasheet: https://www.mouser.com/datasheet/2/1117/M5Stack_08102021_C008-2509339.pdf
