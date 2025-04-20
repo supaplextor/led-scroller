@@ -8,7 +8,6 @@
 #include <SPI.h>
 #include <ArduinoOTA.h>
 #include <WiFiManager.h>                // https://github.com/tzapu/WiFiManager
-#include <DHTesp.h>
 #include <MD_Parola.h>
 #include <MD_MAX72xx.h>
 #include "Font_Data.h"
@@ -132,19 +131,9 @@ String form()
     "<p><b>Set Message</b></p>" \
 
     "<form id=\"data_form\" name=\"frmText\" action=\"/msg\">" \
-    "\nText macros supported: $$ followed by: VCC IP SSID DATE TIME TEMP_F TEMP_C HUMID <br/>" \
+    "\nText macros supported: $$ followed by: IP SSID DATE TIME<br/>" \
     "<label>Message:<br><input type=\"text\" name=\"message\" size=\"128\" maxlength=\"255\" value='__MESSAGE__'></label>" \
-    "<br/><!-- <br><br>" \
-    "<input type = \"radio\" name = \"Invert\" value = \"0\" checked> Normal" \
-    "<input type = \"radio\" name = \"Invert\" value = \"1\"> Inverse" \
-    "<br>" \
-    "<input type = \"radio\" name = \"ScrollType\" value = \"L\" checked> Left Scroll" \
-    "<input type = \"radio\" name = \"ScrollType\" value = \"R\"> Right Scroll" \
-    "<br><br>" \
-    "<label>Speed:<br>Fast<input type=\"range\" name=\"Speed\"min=\"10\" max=\"250\">Slow"\
-    "<br>" \
-    "</form>" \
-    "<br> -->" \
+    "<br/>" \
     "<input type=\"submit\" value=\"Send Data\" onclick=\"SendData()\">";
 
   std::string myhtml3 =
